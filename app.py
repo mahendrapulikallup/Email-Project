@@ -10,13 +10,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Allow your GitHub Pages frontend to call this backend
+# Allow GitHub Pages frontend
 CORS(app, resources={
-    r"/send-email": {
-        "origins": [
-            "https://mahendrapulikallup.github.io"
-        ]
-    }
+    r"/send-email": {"origins": "https://mahendrapulikallup.github.io"}
 })
 
 EMAIL_USER = os.getenv("EMAIL_USER")
@@ -28,7 +24,6 @@ def home():
 
 @app.route("/send-email", methods=["POST", "OPTIONS"])
 def send_email():
-    # Handle preflight request
     if request.method == "OPTIONS":
         return jsonify({"ok": True}), 200
 
@@ -48,17 +43,15 @@ def send_email():
         if not EMAIL_USER or not EMAIL_PASS:
             return jsonify({
                 "success": False,
-                "message": "EMAIL_USER or EMAIL_PASS not found in environment variables"
+                "message": "EMAIL_USER or EMAIL_PASS not found in Render environment variables"
             }), 500
 
-        # Create email message
         msg = MIMEMultipart()
         msg["From"] = EMAIL_USER
         msg["To"] = receiver_email
         msg["Subject"] = subject
         msg.attach(MIMEText(message, "plain"))
 
-        # Gmail SMTP
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(EMAIL_USER, EMAIL_PASS)
@@ -81,6 +74,7 @@ def send_email():
             "success": False,
             "message": str(e)
         }), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
