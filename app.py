@@ -4,16 +4,19 @@ import smtplib
 import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-EMAIL_USER = os.environ.get("EMAIL_USER")
-EMAIL_PASS = os.environ.get("EMAIL_PASS")
+EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_PASS = os.getenv("EMAIL_PASS")
 
 @app.route("/")
 def home():
-    return "SMTP Backend is running on Render!"
+    return "SMTP Backend is running!"
 
 @app.route("/send-email", methods=["POST"])
 def send_email():
@@ -27,13 +30,13 @@ def send_email():
         if not receiver_email or not subject or not message:
             return jsonify({
                 "success": False,
-                "message": "Receiver email, subject, and message are required"
+                "message": "Receiver email, subject and message are required"
             }), 400
 
         if not EMAIL_USER or not EMAIL_PASS:
             return jsonify({
                 "success": False,
-                "message": "EMAIL_USER or EMAIL_PASS is missing in Render environment variables"
+                "message": "EMAIL_USER or EMAIL_PASS not found in environment"
             }), 500
 
         msg = MIMEMultipart()
@@ -56,7 +59,7 @@ def send_email():
     except smtplib.SMTPAuthenticationError:
         return jsonify({
             "success": False,
-            "message": "Authentication failed. Check EMAIL_USER and EMAIL_PASS."
+            "message": "Authentication failed. Check your Gmail and App Password."
         }), 401
 
     except Exception as e:
@@ -64,7 +67,6 @@ def send_email():
             "success": False,
             "message": str(e)
         }), 500
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
