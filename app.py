@@ -4,15 +4,13 @@ import smtplib
 import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-EMAIL_USER = os.getenv("EMAIL_USER")
-EMAIL_PASS = os.getenv("EMAIL_PASS")
+# Put your Gmail and App Password in GitHub environment variables later
+EMAIL_USER = os.environ.get("EMAIL_USER")
+EMAIL_PASS = os.environ.get("EMAIL_PASS")
 
 @app.route("/send-email", methods=["POST"])
 def send_email():
@@ -28,6 +26,12 @@ def send_email():
                 "success": False,
                 "message": "Receiver email, subject, and message are required"
             }), 400
+
+        if not EMAIL_USER or not EMAIL_PASS:
+            return jsonify({
+                "success": False,
+                "message": "EMAIL_USER or EMAIL_PASS is not set in environment variables"
+            }), 500
 
         msg = MIMEMultipart()
         msg["From"] = EMAIL_USER
