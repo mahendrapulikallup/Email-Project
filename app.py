@@ -8,9 +8,12 @@ from email.mime.multipart import MIMEMultipart
 app = Flask(__name__)
 CORS(app)
 
-# Put your Gmail and App Password in GitHub environment variables later
 EMAIL_USER = os.environ.get("EMAIL_USER")
 EMAIL_PASS = os.environ.get("EMAIL_PASS")
+
+@app.route("/")
+def home():
+    return "SMTP Backend is running on Render!"
 
 @app.route("/send-email", methods=["POST"])
 def send_email():
@@ -30,7 +33,7 @@ def send_email():
         if not EMAIL_USER or not EMAIL_PASS:
             return jsonify({
                 "success": False,
-                "message": "EMAIL_USER or EMAIL_PASS is not set in environment variables"
+                "message": "EMAIL_USER or EMAIL_PASS is missing in Render environment variables"
             }), 500
 
         msg = MIMEMultipart()
@@ -62,5 +65,6 @@ def send_email():
             "message": str(e)
         }), 500
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
