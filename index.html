@@ -146,12 +146,14 @@
   </div>
 
   <script>
-    <script>
+  console.log("NEW FRONTEND LOADED");
+
   const form = document.getElementById("emailForm");
   const statusText = document.getElementById("status");
   const sendBtn = document.getElementById("sendBtn");
 
   const BACKEND_URL = "https://email-project-d0ti.onrender.com/send-email";
+  console.log("Backend URL:", BACKEND_URL);
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -164,6 +166,9 @@
     statusText.textContent = "Sending email...";
     sendBtn.disabled = true;
     sendBtn.textContent = "Sending...";
+
+    console.log("Send button clicked");
+    console.log("Sending data:", { receiverEmail, subject, message });
 
     try {
       const response = await fetch(BACKEND_URL, {
@@ -179,7 +184,10 @@
         })
       });
 
+      console.log("Response object:", response);
+
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (response.ok && data.success) {
         statusText.className = "success";
@@ -190,7 +198,7 @@
         statusText.textContent = data.message || "Failed to send email.";
       }
     } catch (error) {
-      console.error("Frontend error:", error);
+      console.error("Frontend fetch error:", error);
       statusText.className = "error";
       statusText.textContent = "Could not connect to backend.";
     } finally {
@@ -199,6 +207,5 @@
     }
   });
 </script>
-  </script>
 </body>
 </html>
