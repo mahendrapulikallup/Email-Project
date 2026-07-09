@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 import smtplib
 import os
@@ -10,13 +10,20 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Allow GitHub Pages frontend
-CORS(app, resources={
-    r"/send-email": {"origins": "https://mahendrapulikallup.github.io"}
-})
+CORS(
+    app,
+    resources={r"/*": {"origins": "https://mahendrapulikallup.github.io"}}
+)
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "https://mahendrapulikallup.github.io"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
 
 @app.route("/")
 def home():
@@ -25,10 +32,10 @@ def home():
 @app.route("/send-email", methods=["POST", "OPTIONS"])
 def send_email():
     if request.method == "OPTIONS":
-        return jsonify({"ok": True}), 200
+        return make_response("", 200)
 
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
 
         receiver_email = data.get("receiverEmail")
         subject = data.get("subject")
