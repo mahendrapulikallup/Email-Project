@@ -10,29 +10,25 @@ load_dotenv()
 
 app = Flask(__name__)
 
-CORS(
-    app,
-    resources={r"/*": {"origins": "https://mahendrapulikallup.github.io"}}
-)
+# Allow GitHub Pages frontend
+CORS(app, origins=["https://mahendrapulikallup.github.io"])
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 
-@app.after_request
-def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "https://mahendrapulikallup.github.io"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    return response
-
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
     return "SMTP Backend is running!"
 
 @app.route("/send-email", methods=["POST", "OPTIONS"])
 def send_email():
+    # Preflight request
     if request.method == "OPTIONS":
-        return make_response("", 200)
+        response = make_response("", 200)
+        response.headers["Access-Control-Allow-Origin"] = "https://mahendrapulikallup.github.io"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        return response
 
     try:
         data = request.get_json(silent=True) or {}
@@ -65,22 +61,28 @@ def send_email():
         server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
         server.quit()
 
-        return jsonify({
+        response = jsonify({
             "success": True,
             "message": "Email sent successfully!"
-        }), 200
+        })
+        response.headers["Access-Control-Allow-Origin"] = "https://mahendrapulikallup.github.io"
+        return response, 200
 
     except smtplib.SMTPAuthenticationError:
-        return jsonify({
+        response = jsonify({
             "success": False,
             "message": "Authentication failed. Check Gmail App Password."
-        }), 401
+        })
+        response.headers["Access-Control-Allow-Origin"] = "https://mahendrapulikallup.github.io"
+        return response, 401
 
     except Exception as e:
-        return jsonify({
+        response = jsonify({
             "success": False,
             "message": str(e)
-        }), 500
+        })
+        response.headers["Access-Control-Allow-Origin"] = "https://mahendrapulikallup.github.io"
+        return response, 500
 
 
 if __name__ == "__main__":
