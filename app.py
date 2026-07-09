@@ -9,7 +9,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+# Allow your GitHub Pages frontend to call this backend
+CORS(app, resources={
+    r"/send-email": {
+        "origins": [
+            "https://mahendrapulikallup.github.io"
+        ]
+    }
+})
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
@@ -18,8 +26,12 @@ EMAIL_PASS = os.getenv("EMAIL_PASS")
 def home():
     return "SMTP Backend is running!"
 
-@app.route("/send-email", methods=["POST"])
+@app.route("/send-email", methods=["POST", "OPTIONS"])
 def send_email():
+    # Handle preflight request
+    if request.method == "OPTIONS":
+        return jsonify({"ok": True}), 200
+
     try:
         data = request.get_json()
 
@@ -36,15 +48,17 @@ def send_email():
         if not EMAIL_USER or not EMAIL_PASS:
             return jsonify({
                 "success": False,
-                "message": "EMAIL_USER or EMAIL_PASS not found in environment"
+                "message": "EMAIL_USER or EMAIL_PASS not found in environment variables"
             }), 500
 
+        # Create email message
         msg = MIMEMultipart()
         msg["From"] = EMAIL_USER
         msg["To"] = receiver_email
         msg["Subject"] = subject
         msg.attach(MIMEText(message, "plain"))
 
+        # Gmail SMTP
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(EMAIL_USER, EMAIL_PASS)
@@ -54,12 +68,12 @@ def send_email():
         return jsonify({
             "success": True,
             "message": "Email sent successfully!"
-        })
+        }), 200
 
     except smtplib.SMTPAuthenticationError:
         return jsonify({
             "success": False,
-            "message": "Authentication failed. Check your Gmail and App Password."
+            "message": "Authentication failed. Check Gmail App Password."
         }), 401
 
     except Exception as e:
