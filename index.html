@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SMTP Email Sender</title>
-  
 
   <style>
     * {
@@ -122,19 +121,9 @@
 <body>
   <div class="container">
     <h1>SMTP Email Sender</h1>
-    <p class="subtitle">Send email using Python SMTP backend</p>
+    <p class="subtitle">Send email using Flask + Gmail SMTP</p>
 
     <form id="emailForm">
-      <div class="input-group">
-        <label for="senderEmail">Sender Email</label>
-        <input type="email" id="senderEmail" placeholder="Enter sender email" required />
-      </div>
-
-      <div class="input-group">
-        <label for="senderPassword">Email Password / App Password</label>
-        <input type="password" id="senderPassword" placeholder="Enter app password" required />
-      </div>
-
       <div class="input-group">
         <label for="receiverEmail">Receiver Email</label>
         <input type="email" id="receiverEmail" placeholder="Enter receiver email" required />
@@ -142,7 +131,7 @@
 
       <div class="input-group">
         <label for="subject">Subject</label>
-        <input type="text" id="subject" placeholder="Enter subject" required />
+        <input type="text" id="subject" placeholder="Enter email subject" required />
       </div>
 
       <div class="input-group">
@@ -161,11 +150,12 @@
     const statusText = document.getElementById("status");
     const sendBtn = document.getElementById("sendBtn");
 
+    // Replace this after Render deploy
+    const BACKEND_URL = "YOUR_RENDER_URL_HERE/send-email";
+
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      const senderEmail = document.getElementById("senderEmail").value.trim();
-      const senderPassword = document.getElementById("senderPassword").value.trim();
       const receiverEmail = document.getElementById("receiverEmail").value.trim();
       const subject = document.getElementById("subject").value.trim();
       const message = document.getElementById("message").value.trim();
@@ -176,14 +166,12 @@
       sendBtn.textContent = "Sending...";
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/send-email", {
+        const response = await fetch(BACKEND_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            senderEmail,
-            senderPassword,
             receiverEmail,
             subject,
             message
