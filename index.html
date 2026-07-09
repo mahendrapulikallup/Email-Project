@@ -150,7 +150,6 @@
     const statusText = document.getElementById("status");
     const sendBtn = document.getElementById("sendBtn");
 
-    // Replace this after Render deploy
     const BACKEND_URL = "https://email-project-d0ti.onrender.com/send-email";
 
     form.addEventListener("submit", async function (e) {
@@ -189,9 +188,9 @@
           statusText.textContent = data.message || "Failed to send email.";
         }
       } catch (error) {
+        console.error("Frontend error:", error);
         statusText.className = "error";
         statusText.textContent = "Could not connect to backend.";
-        console.error(error);
       } finally {
         sendBtn.disabled = false;
         sendBtn.textContent = "Send Email";
